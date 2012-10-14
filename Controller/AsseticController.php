@@ -27,6 +27,15 @@ use Symfony\Component\HttpKernel\Profiler\Profiler;
  */
 class AsseticController
 {
+    protected static $mimetypes = [
+        'gif'   => 'image/gif',
+        'png'   => 'image/png',
+        'jpg'   => 'image/jpg',
+        'jpeg'  => 'image/jpg',
+        'css'   => 'text/css',
+        'js'    => 'text/javascript',
+    ];
+
     protected $request;
     protected $am;
     protected $cache;
@@ -59,6 +68,17 @@ class AsseticController
 
         $response = $this->createResponse();
         $response->setExpires(new \DateTime());
+
+//        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+//        $info = finfo_file($finfo, $asset->getSourceRoot() . '/' . $asset->getSourcePath());     Doesn't work work css — "text/x-asm; charset=us-ascii"
+//        finfo_close($finfo);
+//        $info = mime_content_type($asset->getSourceRoot() . '/' . $asset->getSourcePath());      Doesn't work work css — "text/x-asm; charset=us-ascii"
+//        $info = exec('file -bi ' . $asset->getSourceRoot() . '/' . $asset->getSourcePath());     Doesn't work work css — "text/x-asm; charset=us-ascii"
+
+        $ext = pathinfo($asset->getTargetPath(), PATHINFO_EXTENSION);
+        if (array_key_exists($ext, self::$mimetypes)) {
+            $response->headers->set('Content-Type', self::$mimetypes[$ext]);
+        }
 
         // last-modified
         if (null !== $lastModified = $asset->getLastModified()) {
